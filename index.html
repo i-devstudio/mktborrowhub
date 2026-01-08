@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ระบบยืม-คืนสินค้า</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ป้องกันการซูมเข้าเองใน iOS เมื่อกด input */
+        input, select, textarea { font-size: 16px !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+    <div class="max-w-xl mx-auto px-4 py-6 md:py-12">
+        
+        <div id="home-page" class="text-center space-y-8 py-10">
+            <div class="space-y-2">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-600">Inventory System</h1>
+                <p class="text-slate-500">ระบบยืม-คืนสินค้าออนไลน์</p>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="showPage('borrow-form')" class="w-full sm:w-44 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">ยืมสินค้า</button>
+                <button onclick="showPage('return-form')" class="w-full sm:w-44 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">คืนสินค้า</button>
+            </div>
+        </div>
+
+        <section id="borrow-form" class="hidden animate-in fade-in duration-300">
+            <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8">
+                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                    <span class="w-2 h-8 bg-blue-600 rounded-full"></span> แบบฟอร์มยืมสินค้า
+                </h2>
+                
+                <form id="borrowForm" onsubmit="openSummary(event)" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-600">รหัสพนักงาน</label>
+                            <input type="text" id="empId" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-600">ชื่อเล่น</label>
+                            <input type="text" id="nickname" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                    </div>
+
+                    <div id="item-container" class="space-y-4">
+                        <label class="text-sm font-semibold text-slate-600">รายการสินค้า</label>
+                        </div>
+                    
+                    <button type="button" onclick="addItemField()" class="inline-flex items-center text-blue-600 font-bold text-sm bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition">
+                        + เพิ่มรายการ
+                    </button>
+					<div class="mt-4 space-y-1">
+						<label class="block text-[12px] font-bold uppercase text-slate-400 ml-1">เหตุผลการยืม</label>
+						<div class="relative group">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+								</svg>
+							</div>
+							
+							<input list="reason-list" id="borrowReason" 
+								onfocus="this.value=''" 
+								class="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all placeholder:text-slate-300"
+								placeholder="คลิกเพื่อเลือกเหตุผล...">
+								
+							<button type="button" onclick="document.getElementById('borrowReason').value=''" 
+								class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-300 hover:text-red-400 transition-colors">
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+								</svg>
+							</button>
+					
+							<datalist id="reason-list">
+								<option value="ยืมเพื่อถ่ายทำ Content">
+								<option value="ยืมเพื่อไลฟ์สด">
+								<option value="ยืมเพื่อออกงาน Event / ออกกอง">
+								<option value="ยืมเพื่อทดสอบสินค้าใหม่ (Internal Test)">
+								<option value="ยืมเพื่อจัด Display / ถ่าย Packshot">
+							</datalist>
+						</div>
+					</div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-600">วันที่ยืม</label>
+                            <input type="date" id="borrowDate" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-sm font-semibold text-slate-600">กำหนดคืน</label>
+                            <input type="date" id="returnDate" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-sm font-semibold text-slate-600">แนบรูปภาพ (ไม่เกิน 1MB)</label>
+                        <input type="file" id="borrowImg" accept="image/*" class="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+
+                    <div class="flex flex-col-reverse md:flex-row gap-3 pt-4">
+                        <button type="button" onclick="showPage('home-page')" class="w-full py-3 text-slate-500 font-medium">ย้อนกลับ</button>
+                        <button type="submit" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl shadow-blue-200 shadow-lg">ยืนยันข้อมูล</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        </div>
+
+    <div id="modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 z-50">
+        <div class="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl p-8 animate-in slide-in-from-bottom duration-300">
+            <h3 class="text-xl font-bold mb-4 text-slate-800">ยืนยันการยืมสินค้า</h3>
+            <div id="summary-content" class="bg-slate-50 rounded-2xl p-4 text-sm space-y-3 mb-8 max-h-[50vh] overflow-y-auto"></div>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="closeModal()" class="py-3 rounded-xl font-bold border border-slate-200 text-slate-600">แก้ไข</button>
+                <button onclick="saveToSheet()" id="confirmBtn" class="py-3 rounded-xl font-bold bg-blue-600 text-white shadow-lg">ส่งข้อมูล</button>
+            </div>
+        </div>
+		
+    </div>
+
+	
+
+    <script src="script.js"></script>
+</body>
+</html>

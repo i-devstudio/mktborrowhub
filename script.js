@@ -1,6 +1,6 @@
 let itemCount = 0;
 // *** ตรวจสอบ URL นี้ให้ตรงกับหน้า Deploy ล่าสุดของคุณ ***
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJ2go-pF9ZMump0EW2u32kHbF8dZsWU1EpsNXVpC3yf74edmlLokfmnTCTOTadSclLNw/exec'; 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbycFhWh6ybV0v1aWQPeQDi72F5ETCs3BYVpYE1aLjsRX752phEhab0DulTxtf69XjrdIA/exec'; 
 
 const inventoryData = {
     "รองพื้น": {

@@ -1,6 +1,6 @@
 let itemCount = 0;
 // *** ตรวจสอบ URL นี้ให้ตรงกับหน้า Deploy ล่าสุดของคุณ ***
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9Z_OAGpD-L_SUFEaS8SeWYRHEGJgM68PmubVX33TcBPeyDqMlkn2maaFFWnG9gsjyaw/exec'; 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwJ2go-pF9ZMump0EW2u32kHbF8dZsWU1EpsNXVpC3yf74edmlLokfmnTCTOTadSclLNw/exec'; 
 
 const inventoryData = {
     "รองพื้น": {
@@ -23,12 +23,29 @@ const inventoryData = {
         "Scret Poreless Skin Primer 30 ml": ["No Variant"],
         "Scret Poreless Skin Primer 15 ml": ["No Variant"],
         "Blurring Wrinkle Concealer": ["01 Vanilla","02 Petal Nude","03 Nude"],
-        "Oil Control Base Gel SPF 50 PA +++++": ["Green", "Purple"],
+        "Oil Control Base Gel SPF 50 PA +++++": ["No Variant"],
         "Corrector Color": ["Green", "Purple","Peach"],
         "Bright Tone Up": ["No Variant"]
     },
     "แก้ม ตา ปาก": {
-        "Lip Matte": ["Red Orchid", "Pink Rose"],
+        "Soft Touch Matte Lips Ex": ["F1", "P1", "P2", "NN", "PF", "FN"],
+        "Lit Glit Lip Liner": ["01 Glow Beige", "02 First Light", "03 Sunshine Lit"],
+        "Lit Glit Liquid Blush": ["01 Peach Lit","02 Nude Light", "03 Maple Shine","04 Twilight", "05 Pink Bloom", "06 Scarlet Ray", "07 Ivory Glow", "08 Mocha Mist"],
+        "2 IN 1 Fix It Eyebrow": ["No Variant"],
+        "Soft Serve": ["VP","FP","FF","PP","PN","PF"],
+        "Keep Me Aspiring": ["01 Next Level Dream","02 Next Level Shine"],
+        "Soft Slim": ["No Variant"],
+        "Juicy Lush Tint Balm": ["N1","F0","P0","P2","F2"],
+        "Glittering Eye": ["C1 Silver","F1 Golden Sand"],
+        "Dolly Eye 2 IN 1": ["P0 Rosy Twinkle","N0 Golden Glow"],
+        "Perfect Match Palette": ["No Variant"],
+        "Classic Black Liner": ["No Variant"],
+        "Fushion Glam Eye": ["FG","PR","NN"],
+        "Blush Bomb": ["F1","N1","P1","P2","R1"],
+        "Slay Lash Mascara": ["No Variant"],
+        "Eye Expert Eyeliner": ["No Variant"],
+        "Soft Bake Lip": ["FF", "NP","PN","PP","RR","FN","NF"],
+        "Glossy Luxe Lip": ["P0 Charming", "F0 Energetic Gal"],
         "Blush On": ["Soft Orange"]
     },
     "สกินแคร์ & ครีมกันแดด": {
@@ -41,14 +58,29 @@ const inventoryData = {
         "Shoothing Facial Lock Mist": ["No Variant"],
     },
     "อุปกรณ์": {
-        "อุปกรณ์": ["แปรงแต่งหน้า", "ฟองน้ำ"]
+        "Marshmallow Puff": ["No Variant"],
+        "Essential Brush Set": ["No Variant"],
+        "Foundation Brush": ["No Variant"],
+        "Make Up Studio Pro Brush Set": ["No Variant"],
+        "Smooth Nano Puff": ["No Variant"],
+        "Eyelash Curler": ["No Variant"]
     }
 };
 
 // 1. จัดการหน้าจอ
 function showPage(pageId) {
-    document.querySelectorAll('section, #home-page').forEach(el => el.classList.add('hidden'));
-    document.getElementById(pageId).classList.remove('hidden');
+    // ซ่อนทุกหน้า (Section) และ หน้า Home
+    document.querySelectorAll('section, #home-page').forEach(el => {
+        el.classList.add('hidden');
+    });
+    
+    // แสดงหน้าที่ต้องการ
+    const targetPage = document.getElementById(pageId);
+    if (targetPage) {
+        targetPage.classList.remove('hidden');
+    }
+    
+    // ถ้าไปหน้ายืมและยังไม่มีรายการ ให้เพิ่ม 1 รายการอัตโนมัติ
     if(pageId === 'borrow-form' && itemCount === 0) addItemField();
 }
 
@@ -171,24 +203,50 @@ const toBase64 = file => new Promise((resolve, reject) => {
 
 // 4. สรุปผลและส่งข้อมูล
 // ฟังก์ชันแสดงสรุปก่อนส่ง
+// ... (คงส่วน inventoryData และ showPage ไว้เหมือนเดิม) ...
+
+// 4. สรุปผลและส่งข้อมูล
 function openSummary(e) {
     e.preventDefault();
     
-    // 1. บังคับแนบรูป
+    // 1. ตรวจสอบไฟล์ภาพ
     const fileInput = document.getElementById('borrowImg');
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         alert("🚨 กรุณาแนบรูปภาพสินค้าก่อนส่งข้อมูลครับ");
         return;
     }
 
-    // 2. เตรียมข้อมูลวันที่
-    const now = new Date();
-    const borrowDateDisplay = now.toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+    // 2. ดึงค่าจาก Input วันที่ทั้งสองช่อง
+    const borrowDateRaw = document.getElementById('borrowDate').value;
+    const returnDateRaw = document.getElementById('returnDate').value;
 
+    if (!borrowDateRaw || !returnDateRaw) {
+        alert("🚨 กรุณาเลือกทั้งวันที่ยืมและกำหนดคืนสินค้า");
+        return;
+    }
+
+    // --- เพิ่มการเช็ก: วันคืนห้ามน้อยกว่าวันยืม ---
+    const bDate = new Date(borrowDateRaw);
+    const rDate = new Date(returnDateRaw);
+
+    if (rDate < bDate) {
+        alert("🚨 วันที่คืนสินค้าห้ามน้อยกว่าวันที่ยืมสินค้าครับ กรุณาตรวจสอบอีกครั้ง");
+        return;
+    }
+
+    // ฟังก์ชันจัดรูปแบบวันที่เป็นภาษาไทย (11 มกราคม 2569)
+    const thaiFormat = (dateObj) => {
+        return dateObj.toLocaleDateString('th-TH', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+
+    const borrowDateDisplay = thaiFormat(bDate);
+    const returnDateDisplay = thaiFormat(rDate);
+
+    // 3. รวมรายการสินค้า
     let itemSummary = '';
     document.querySelectorAll('.item-row').forEach((row, i) => {
         const name = row.querySelector('.item-name').value;
@@ -199,14 +257,28 @@ function openSummary(e) {
         }
     });
 
-    // 3. แสดงผลใน Modal
+    // 4. แสดงผลใน Modal (Summary)
     document.getElementById('summary-content').innerHTML = `
-        <div class="space-y-2">
-            <p><strong>ผู้ยืม:</strong> ${document.getElementById('nickname').value} (${document.getElementById('empId').value})</p>
-            <p class="text-blue-600"><strong>วันที่ยืม (วันนี้):</strong> ${borrowDateDisplay}</p>
-            <p class="text-red-600"><strong>กำหนดคืน:</strong> ${document.getElementById('returnDate').value}</p>
-            <div class="bg-white p-3 rounded-lg border my-2 text-sm">
-                <p class="font-bold border-b mb-2">รายการสินค้า:</p>
+        <div class="space-y-3 text-left">
+            <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                <p class="text-xs text-blue-500 font-bold uppercase mb-1">ข้อมูลผู้ยืม</p>
+                <p><strong>ชื่อ:</strong> ${document.getElementById('nickname').value} (${document.getElementById('empId').value})</p>
+                <p><strong>เหตุผล:</strong> ${document.getElementById('borrowReason').value || '-'}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <p class="text-[10px] text-slate-400 uppercase font-bold">วันที่ยืม</p>
+                    <p class="text-sm font-semibold text-slate-700">${borrowDateDisplay}</p>
+                </div>
+                <div class="p-3 bg-red-50 rounded-xl border border-red-100">
+                    <p class="text-[10px] text-red-400 uppercase font-bold">กำหนดคืน</p>
+                    <p class="text-sm font-semibold text-red-600">${returnDateDisplay}</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-xl border border-slate-200 text-sm">
+                <p class="font-bold border-b mb-2 pb-1 text-slate-500">รายการสินค้า:</p>
                 ${itemSummary}
             </div>
         </div>
@@ -214,8 +286,14 @@ function openSummary(e) {
     document.getElementById('modal').classList.remove('hidden');
 	
 }
+// เพิ่มฟังก์ชันปิด Modal (ถ้าในไฟล์ยังไม่มี)
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+}
 
-function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+// ผูกฟังก์ชันกับปุ่มแก้ไข (ถ้าปุ่มมี ID หรือ Class ที่ระบุได้)
+// สมมติว่าปุ่มแก้ไขอยู่ใน modal และเป็นปุ่มแรก
+document.querySelector('#modal button:first-of-type').addEventListener('click', closeModal);
 
 async function saveToSheet() {
     const btn = document.getElementById('confirmBtn');
@@ -237,10 +315,13 @@ async function saveToSheet() {
         fileName = file.name;
     }
 
+    // เตรียมข้อมูลส่งไป Apps Script
     const data = {
         empId: document.getElementById('empId').value,
         nickname: document.getElementById('nickname').value,
+        borrowDate: document.getElementById('borrowDate').value, // เพิ่มวันยืม
         returnDate: document.getElementById('returnDate').value,
+        reason: document.getElementById('borrowReason').value, // ✅ ส่งเหตุผลไปที่ Sheet
         status: 'ในระหว่างยืมสินค้า',
         image: imageData,
         imageName: fileName,
@@ -262,10 +343,144 @@ async function saveToSheet() {
             location.reload();
         } else {
             alert("Error: " + result.error);
+            btn.disabled = false; btn.innerText = "ส่งข้อมูล";
         }
     } catch (error) {
         console.error(error);
-        alert("บันทึกสำเร็จ (CORS)! ตรวจสอบใน Sheet");
+        alert("บันทึกสำเร็จ! (CORS)");
         location.reload();
     }
 }
+
+// ค้นหารายการจากรหัสพนักงาน
+// ค้นหารายการจากรหัสพนักงาน พร้อมเรียงลำดับวันที่ใกล้คืนที่สุด
+async function searchBorrowedItems() {
+    const empId = document.getElementById('searchEmpId').value;
+    if (!empId) return alert("กรุณากรอกรหัสพนักงาน");
+
+    const listContainer = document.getElementById('borrow-list');
+    listContainer.innerHTML = '<p class="text-center py-10 text-slate-500">กำลังค้นหาข้อมูล...</p>';
+
+    try {
+        const response = await fetch(`${SCRIPT_URL}?action=getBorrowed&empId=${empId}`);
+        const rawItems = await response.json();
+
+        if (rawItems.length === 0) {
+            listContainer.innerHTML = '<p class="text-center text-red-400 py-10">ไม่พบรายการค้างยืมสำหรับรหัสนี้</p>';
+            return;
+        }
+
+        // 1. จัดกลุ่มสินค้าที่มี ID เดียวกัน (Group by ID)
+        const groupedItems = rawItems.reduce((acc, item) => {
+            if (!acc[item.id]) {
+                acc[item.id] = { ...item, products: [] };
+            }
+            acc[item.id].products.push(`${item.itemList} x ${item.qty || 1}`); 
+            return acc;
+        }, {});
+
+        // 2. แปลงเป็น Array และเรียงลำดับ (Sort) ตามวันที่คืนที่ใกล้ที่สุด
+        const sortedItems = Object.values(groupedItems).sort((a, b) => {
+            const dateA = new Date(a.returnDate);
+            const dateB = new Date(b.returnDate);
+            return dateA - dateB; // วันที่น้อยกว่า (มาถึงก่อน) จะอยู่ด้านบน
+        });
+
+        // 3. แสดงผลในรูปแบบ Card
+        listContainer.innerHTML = sortedItems.map(group => {
+            const allProductsText = group.products.join('<br>• ');
+            
+            // ตรวจสอบว่าใกล้ถึงกำหนดคืนหรือยัง (ถ้าเหลือ <= 2 วัน ให้เปลี่ยนสีเตือน)
+            const today = new Date();
+            const returnDateObj = new Date(group.returnDate);
+            const diffTime = returnDateObj - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const isUrgent = diffDays <= 2;
+
+            return `
+            <div class="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden mb-4 animate-in fade-in slide-in-from-bottom-4">
+                <div class="absolute top-0 left-0 w-1.5 h-full ${isUrgent ? 'bg-red-500' : 'bg-blue-500'}"></div>
+                
+                <div class="flex justify-between items-start mb-2">
+                    <span class="text-[10px] font-bold ${isUrgent ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'} px-2 py-0.5 rounded-full">ID: ${group.id}</span>
+                    <span class="text-[10px] text-slate-400 font-medium">ยืมเมื่อ: ${group.borrowDate}</span>
+                </div>
+                
+                <p class="font-bold text-slate-800 text-lg">${group.nickname} (${group.empId})</p>
+                
+                <div class="bg-slate-50 p-4 rounded-2xl my-3 border border-slate-50">
+                    <p class="text-[10px] uppercase font-bold text-slate-400 mb-2">รายการสินค้าที่ยืม:</p>
+                    <p class="text-sm text-slate-700 leading-relaxed font-medium">• ${allProductsText}</p> 
+                </div>
+
+                <div class="flex justify-between items-center text-xs mb-4">
+                    <span class="text-slate-400">กำหนดคืน:</span>
+                    <span class="font-bold ${isUrgent ? 'text-white bg-red-500 animate-pulse' : 'text-red-500 bg-red-50'} px-3 py-1.5 rounded-lg">
+                        ${group.returnDate} ${isUrgent ? '(ใกล้ครบกำหนด!)' : ''}
+                    </span>
+                </div>
+
+                <button onclick="openReturnModal('${group.id}', '${group.products.join(', ')}')" 
+                    class="w-full py-4 ${isUrgent ? 'bg-red-600 hover:bg-red-700' : 'bg-slate-900 hover:bg-slate-800'} text-white rounded-2xl font-bold transition-all active:scale-95 shadow-lg">
+                    คืนรายการทั้งหมดนี้
+                </button>
+            </div>
+            `;
+        }).join('');
+
+    } catch (e) {
+        console.error("Search Error:", e);
+        listContainer.innerHTML = '<p class="text-center text-red-400 py-10">เกิดข้อผิดพลาดในการดึงข้อมูล โปรดลองใหม่</p>';
+    }
+}
+
+function openReturnModal(id, info) {
+    document.getElementById('targetReturnId').value = id;
+    document.getElementById('return-item-info').innerText = "รายการ: " + info;
+    document.getElementById('return-modal').classList.remove('hidden');
+}
+
+function closeReturnModal() {
+    document.getElementById('return-modal').classList.add('hidden');
+}
+
+async function submitReturn() {
+    const btn = document.getElementById('confirmReturnBtn');
+    const id = document.getElementById('targetReturnId').value;
+    const fileInput = document.getElementById('returnImg'); // ID ของ Input file ใน Modal คืน
+
+    if (fileInput.files.length === 0) {
+        alert("🚨 กรุณาถ่ายรูปสินค้าตอนคืนเพื่อเป็นหลักฐานครับ");
+        return;
+    }
+
+    btn.innerText = "กำลังบันทึก...";
+    btn.disabled = true;
+
+    try {
+        // แปลงรูปภาพเป็น Base64
+        const imgBase64 = await toBase64(fileInput.files[0]);
+
+        const data = {
+            action: "returnItem",
+            id: id,
+            returnImage: imgBase64 // ส่งรูปภาพไปด้วย
+        };
+
+        const response = await fetch(SCRIPT_URL, {
+            method: "POST",
+            body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+        if (result.result === "success") {
+            alert("✅ คืนสินค้าและบันทึกรูปภาพเรียบร้อย!");
+            location.reload();
+        }
+    } catch (e) {
+        console.error(e);
+        alert("บันทึกสำเร็จ (CORS)!");
+        location.reload();
+    }
+}
+

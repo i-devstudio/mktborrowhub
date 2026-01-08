@@ -21,7 +21,7 @@
             </div>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <button onclick="showPage('borrow-form')" class="w-full sm:w-44 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">ยืมสินค้า</button>
-                <button onclick="showPage('return-form')" class="w-full sm:w-44 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">คืนสินค้า</button>
+                <button onclick="showPage('return-page')" class="w-full sm:w-44 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95">คืนสินค้า</button>
             </div>
         </div>
 
@@ -35,11 +35,11 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="space-y-1">
                             <label class="text-sm font-semibold text-slate-600">รหัสพนักงาน</label>
-                            <input type="text" id="empId" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <input type="text" id="empId" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition" value="207768">
                         </div>
                         <div class="space-y-1">
                             <label class="text-sm font-semibold text-slate-600">ชื่อเล่น</label>
-                            <input type="text" id="nickname" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <input type="text" id="nickname" required class="w-full bg-slate-50 border-none ring-1 ring-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-blue-500 outline-none transition" value="mark">
                         </div>
                     </div>
 
@@ -118,6 +118,51 @@
         </div>
 		
     </div>
+	<section id="return-page" class="hidden p-4 max-w-md mx-auto">
+		<div class="text-center mb-6">
+			<h2 class="text-2xl font-bold text-slate-800">คืนสินค้า</h2>
+			<p class="text-slate-500 text-sm">กรอกรหัสพนักงานเพื่อดูรายการที่ค้างยืม</p>
+		</div>
+	
+		<div class="relative mb-6">
+			<input type="text" id="searchEmpId" 
+				class="w-full pl-4 pr-12 py-3 bg-white border border-slate-200 rounded-2xl shadow-sm outline-none focus:border-blue-500" 
+				placeholder="รหัสพนักงาน (เช่น 208766)">
+			<button onclick="searchBorrowedItems()" class="absolute right-2 top-1.5 bg-blue-500 text-white p-2 rounded-xl hover:bg-blue-600">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+				</svg>
+			</button>
+		</div>
+	
+		<div id="borrow-list" class="space-y-4"></div>
+		<div class="flex items-center mb-6">
+			<button onclick="showPage('home-page')" class="p-2 mr-2 bg-white rounded-xl shadow-sm border border-slate-100">
+				<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+				</svg>
+			</button>
+			<h2 class="text-xl font-bold text-slate-800">ยืมสินค้าใหม่</h2>
+		</div>
+	</section>
+	
+	
+	<div id="return-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+		<div class="bg-white w-full max-w-sm rounded-3xl p-6 animate-in fade-in zoom-in duration-200">
+			<h3 class="text-lg font-bold mb-4">ยืนยันการคืนสินค้า</h3>
+			<p id="return-item-info" class="text-sm text-slate-600 mb-4"></p>
+			
+			<label class="block text-sm font-medium text-slate-700 mb-2">ถ่ายรูปสินค้าตอนคืน</label>
+			<input type="file" id="returnImg" accept="image/*" capture="environment" class="w-full text-sm mb-4">
+			
+			<input type="hidden" id="targetReturnId">
+			
+			<div class="flex gap-3">
+				<button onclick="closeReturnModal()" class="flex-1 py-3 bg-slate-100 rounded-2xl font-bold">ยกเลิก</button>
+				<button id="confirmReturnBtn" onclick="submitReturn()" class="flex-1 py-3 bg-green-500 text-white rounded-2xl font-bold">ยืนยันคืน</button>
+			</div>
+		</div>
+	</div>
 
 	
 

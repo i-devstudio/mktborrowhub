@@ -306,8 +306,8 @@ async function saveToSheet() {
 
     if (fileInput.files.length > 0) {
         const file = fileInput.files[0];
-        if (file.size > 1048576) {
-            alert("รูปใหญ่เกิน 1MB");
+        if (file.size > 5242880) {
+            alert("รูปใหญ่เกิน 5MB");
             btn.disabled = false; btn.innerText = "ส่งข้อมูล";
             return;
         }
